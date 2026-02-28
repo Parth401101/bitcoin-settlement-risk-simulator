@@ -1,49 +1,91 @@
+# from network.transaction import Transaction
+# from network.mempool import Mempool
+# from network.blockchain import Blockchain
+# from network.miner import Miner
+
+# # Create transactions
+# tx1 = Transaction("Alice", "Bob", 0.5, 0.0001)
+# tx2 = Transaction("Charlie", "Dave", 1.2, 0.0002)
+# tx3 = Transaction("Eve", "Frank", 0.8, 0.00015)
+
+# transactions = [tx1, tx2, tx3]
+
+# # Create mempool and add transactions
+# mempool = Mempool()
+# for tx in transactions:
+#     mempool.add_tx(tx)
+
+# # Create blockchain
+# blockchain = Blockchain()
+
+# # Create miner
+# miner = Miner(mempool, blockchain, block_size=2)
+
+# # Mine until mempool empty
+# while mempool.transactions:
+#     miner.mine_block()
+
+# print("\nFinal Blockchain:", blockchain)
+
+# print("\nTransaction confirmations:")
+# for block in blockchain.chain:
+#     for tx in block.transactions:
+#         print(f"{tx.tx_id} → {tx.confirmations} confirmations")
+
+import random
 from network.transaction import Transaction
-
-# create 3 sample transactions
-tx1 = Transaction("Alice", "Bob", 0.5, 0.0001)
-tx2 = Transaction("Charlie", "Dave", 1.2, 0.0002)
-tx3 = Transaction("Eve", "Frank", 0.8, 0.00015)
-
-# put them in a list
-transactions = [tx1, tx2, tx3]
-
-# print them
-for tx in transactions:
-    print(tx)
-
-
 from network.mempool import Mempool
+from network.blockchain import Blockchain
+from network.miner import Miner
 
-# create mempool
+# ----------------------------
+# Initialize Core Components
+# ----------------------------
+
 mempool = Mempool()
-
-# add transactions
-for tx in transactions:
-    mempool.add_tx(tx)
-
-# print mempool
-print("Mempool initial state:")
-print(mempool)
-
-# print sorted by fee
-print("\nMempool sorted by fee (highest first):")
-sorted_txs = mempool.get_sorted_by_fee()
-for tx in sorted_txs:
-    print(tx)
-
-# remove a tx
-mempool.remove_tx(tx2)
-print("\nMempool after removing tx2:")
-print(mempool)
+blockchain = Blockchain()
+miner = Miner(mempool, blockchain, block_size=3)
 
 
+# ----------------------------
+# Random Transaction Generator
+# ----------------------------
 
-from network.block import Block
+def generate_random_transactions(step):
+    # Random number of new transactions per step
+    num_txs = random.randint(1, 4)
 
-# Mine a block manually using top 2 transactions from sorted mempool
-top_txs = mempool.get_sorted_by_fee()[:2]
-block1 = Block(height=1, transactions=top_txs)
+    for _ in range(num_txs):
+        sender = f"User_{random.randint(1, 10)}"
+        receiver = f"User_{random.randint(1, 10)}"
+        amount = round(random.uniform(0.1, 2.0), 2)
+        fee = round(random.uniform(0.00005, 0.0003), 6)
 
-print("\nBlock 1 mined with transactions:")
-print(block1)
+        tx = Transaction(sender, receiver, amount, fee)
+        mempool.add_tx(tx)
+
+    print(f"\nStep {step}: Generated {num_txs} transactions")
+    print(f"Mempool size: {len(mempool.transactions)}")
+
+
+# ----------------------------
+# Simulation Loop
+# ----------------------------
+
+NUM_STEPS = 5
+
+for step in range(1, NUM_STEPS + 1):
+    generate_random_transactions(step)
+    miner.mine_block()
+
+
+# ----------------------------
+# Final State Output
+# ----------------------------
+
+print("\nFinal Blockchain:", blockchain)
+
+print("\nFinal Transaction Confirmations:")
+for block in blockchain.chain:
+    for tx in block.transactions:
+        print(f"{tx.tx_id} → {tx.confirmations} confirmations")
